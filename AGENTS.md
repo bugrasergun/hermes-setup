@@ -177,13 +177,14 @@ Then instruct the user to:
 - `Calendar` — calendar view for daily notes
 ---
 
-## Step 7: (Optional) Bootstrap Hermes Profiles
+## Step 7: Bootstrap Hermes Profiles
 
-This step adds the Session Initialization Protocol to existing Hermes agent profiles so they auto-read the Brain vault at session start.
+This step adds the Session Initialization Protocol to existing Hermes agent profiles so they auto-read the Brain vault and timeline at session start.
 
 ```bash
 python3 scripts/bootstrap_profiles.py
 ```
+
 ---
 
 ## Step 8: Initialize & Build Semantic Search Index

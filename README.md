@@ -133,13 +133,14 @@ Copies the custom `brain`, `brain-search`, and `honcho-management` skills into y
 - Opens Obsidian (or provides instructions to open the vault manually)
 - Provides guidance on recommended Obsidian plugins
 
-### Step 7: (Optional) Bootstrap Hermes Agent Profiles
+### Step 7: Bootstrap Hermes Agent Profiles
 
-If you want to add the Session Initialization Protocol to your Hermes agent profiles (so they auto-read the brain at session start):
+Add the Session Initialization Protocol to your Hermes agent profiles (so they auto-read the brain and timeline at session start):
 
 ```bash
 python3 scripts/bootstrap_profiles.py
 ```
+
 
 ### Step 8: Initialize & Build Semantic Search Index
 
