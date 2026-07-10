@@ -57,6 +57,7 @@ install_skill() {
 
 install_skill "brain"
 install_skill "brain-search"
+install_skill "honcho-management"
 
 # -----------------------------------------------------------------------------
 # 3. Create Gemini IDE Symlinks
@@ -80,10 +81,12 @@ if [ -d "$GEMINI_SKILLS_DIR" ]; then
 
     link_skill "brain"
     link_skill "brain-search"
+    link_skill "honcho-management"
 else
     echo "  — Gemini configuration directory (~/.gemini/config/skills) not found."
     echo "    Skipping IDE symlinks. (This is normal if you only use CLI/Hermes without Antigravity IDE)."
 fi
+
 
 # -----------------------------------------------------------------------------
 # Done

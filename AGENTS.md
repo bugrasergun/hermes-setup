@@ -143,7 +143,7 @@ Restart Hermes after this step.
 
 **Script location**: `scripts/setup_skills.sh`
 
-This script copies the custom `brain` and `brain-search` skills into your `~/.hermes/skills` directory and sets up symlinks under `~/.gemini/config/skills/` for IDE auto-discovery.
+This script copies the custom `brain`, `brain-search`, and `honcho-management` skills into your `~/.hermes/skills` directory and sets up symlinks under `~/.gemini/config/skills/` for IDE auto-discovery.
 
 ```bash
 chmod +x scripts/setup_skills.sh
@@ -152,8 +152,9 @@ chmod +x scripts/setup_skills.sh
 
 **Verify success**:
 ```bash
-ls ~/.hermes/skills/  # Should show: brain/ brain-search/
+ls ~/.hermes/skills/  # Should show: brain/ brain-search/ honcho-management/
 ```
+
 
 ---
 

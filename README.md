@@ -18,10 +18,11 @@ Before running any scripts, ensure the following are installed on the new machin
 | **Python 3.14+** | `brew install python@3.14` | Required by Librarian daemon |
 | **Ollama** | `brew install ollama` | Local LLM server |
 | **Obsidian** | [Download from obsidian.md](https://obsidian.md) | Brain vault viewer |
-| **Honcho Backend** | [Set up Honcho Server](https://github.com/bugrasergun/honcho) | Manages PostgreSQL + pgvector database (`honcho`) |
+| **Honcho Server** | (Local self-hosted project) | Runs memory API + deriver services (lives at `~/honcho`) |
 
 > [!NOTE]
-> The Brain semantic search script (`index_brain.py`) shares the local PostgreSQL database (`honcho`) and the `pgvector` extension configured by the **Honcho backend**. You do not need to install or configure PostgreSQL manually if your Honcho server is already set up and running.
+> The Brain semantic search script (`index_brain.py`) shares the local PostgreSQL database (`honcho`) and the `pgvector` extension configured by the **Honcho server**. The Honcho server must be cloned and set up separately at `~/honcho/` on the machine (see the `honcho-management` skill for service control and startup instructions).
+
 
 
 ### 2. Hermes
@@ -109,16 +110,17 @@ Honcho provides long-term semantic memory for Hermes agents via a local vector s
 - Optionally installs and starts the Honcho server
 ### Step 5: Install Custom Hermes Skills
 
-Copies the custom `brain` and `brain-search` skills into your `~/.hermes/skills/` directory and sets up symlinks for IDE auto-discovery.
+Copies the custom `brain`, `brain-search`, and `honcho-management` skills into your `~/.hermes/skills/` directory and sets up symlinks for IDE auto-discovery.
 
 ```bash
 ./scripts/setup_skills.sh
 ```
 
 **What it does:**
-- Copies `brain` and `brain-search` custom skill directories to `~/.hermes/skills/`
+- Copies `brain`, `brain-search`, and `honcho-management` custom skill directories to `~/.hermes/skills/`
 - Dynamically resolves and sanitizes user paths
 - Links them under `~/.gemini/config/skills/` for IDE auto-discovery
+
 
 ### Step 6: Configure Obsidian
 
