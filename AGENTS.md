@@ -132,10 +132,27 @@ cat ~/.hermes/honcho.json  # Should show a valid JSON config
 ```
 
 Restart Hermes after this step.
+---
+
+## Step 5: Install Custom Hermes Skills
+
+**Script location**: `scripts/setup_skills.sh`
+
+This script copies the custom `brain` and `brain-search` skills into your `~/.hermes/skills` directory and sets up symlinks under `~/.gemini/config/skills/` for IDE auto-discovery.
+
+```bash
+chmod +x scripts/setup_skills.sh
+./scripts/setup_skills.sh
+```
+
+**Verify success**:
+```bash
+ls ~/.hermes/skills/  # Should show: brain/ brain-search/
+```
 
 ---
 
-## Step 5: Configure Obsidian
+## Step 6: Configure Obsidian
 
 ```bash
 chmod +x scripts/setup_obsidian.sh
@@ -152,10 +169,9 @@ Then instruct the user to:
 - `Templater` — template support
 - `Dataview` — query vault data like a database
 - `Calendar` — calendar view for daily notes
-
 ---
 
-## Step 6: (Optional) Bootstrap Hermes Profiles
+## Step 7: (Optional) Bootstrap Hermes Profiles
 
 This step adds the Session Initialization Protocol to existing Hermes agent profiles so they auto-read the Brain vault at session start.
 
@@ -165,7 +181,7 @@ python3 scripts/bootstrap_profiles.py
 
 ---
 
-## Step 7: Final Verification
+## Step 8: Final Verification
 
 Run this checklist to confirm everything is working:
 

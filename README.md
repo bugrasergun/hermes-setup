@@ -102,8 +102,20 @@ Honcho provides long-term semantic memory for Hermes agents via a local vector s
 - Creates a clean `honcho.json` configuration in `~/.hermes/`
 - Prompts you to configure workspace name, peer name, and agent profiles
 - Optionally installs and starts the Honcho server
+### Step 5: Install Custom Hermes Skills
 
-### Step 5: Configure Obsidian
+Copies the custom `brain` and `brain-search` skills into your `~/.hermes/skills/` directory and sets up symlinks for IDE auto-discovery.
+
+```bash
+./scripts/setup_skills.sh
+```
+
+**What it does:**
+- Copies `brain` and `brain-search` custom skill directories to `~/.hermes/skills/`
+- Dynamically resolves and sanitizes user paths
+- Links them under `~/.gemini/config/skills/` for IDE auto-discovery
+
+### Step 6: Configure Obsidian
 
 ```bash
 ./scripts/setup_obsidian.sh
@@ -114,13 +126,14 @@ Honcho provides long-term semantic memory for Hermes agents via a local vector s
 - Opens Obsidian (or provides instructions to open the vault manually)
 - Provides guidance on recommended Obsidian plugins
 
-### Step 6: (Optional) Bootstrap Hermes Agent Profiles
+### Step 7: (Optional) Bootstrap Hermes Agent Profiles
 
 If you want to add the Session Initialization Protocol to your Hermes agent profiles (so they auto-read the brain at session start):
 
 ```bash
 python3 scripts/bootstrap_profiles.py
 ```
+
 
 ---
 
