@@ -1,0 +1,29 @@
+#!/bin/bash
+# Git post-commit hook: Re-index brain semantic search after each commit
+# Only runs if supported content files were changed in the commit
+#
+# Prerequisites:
+#   - Honcho (or a compatible venv) must be installed at ~/honcho/.venv/
+#   - index_brain.py must be present in ~/brain/scripts/
+#   - PostgreSQL + pgvector must be running locally
+#
+# To install this hook, copy it to: ~/brain/.git/hooks/post-commit
+# Then run: chmod +x ~/brain/.git/hooks/post-commit
+
+# Check if any supported files changed (.md, .pdf, .txt, .srt, .vtt)
+CHANGED=$(git diff --name-only HEAD~1 HEAD -- '*.md' '*.pdf' '*.txt' '*.srt' '*.vtt' 2>/dev/null | head -1)
+if [ -z "$CHANGED" ]; then
+    exit 0
+fi
+
+# Run update in background (non-blocking, does not delay git operations)
+PYTHON_BIN="$HOME/honcho/.venv/bin/python"
+SCRIPT="$HOME/brain/scripts/index_brain.py"
+
+if [ ! -f "$PYTHON_BIN" ]; then
+    # Fallback to system python3
+    PYTHON_BIN="python3"
+fi
+
+# Log to /tmp, don't block git operations
+nohup $PYTHON_BIN $SCRIPT --update > /tmp/brain-reindex.log 2>&1 &

@@ -1,0 +1,15 @@
+// Obsidian — cihaza özel çalışma alanı dosyaları (sync dışı)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+
+// Obsidian çöp kutusu
+.trash/
+
+// macOS sistem dosyaları
+.DS_Store
+._*
+
+// Syncthing geçici dosyaları
+.stfolder
+~syncthing~*

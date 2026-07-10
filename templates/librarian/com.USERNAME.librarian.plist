@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  com.USERNAME.librarian.plist
+  ============================
+  macOS LaunchAgent — runs the Librarian daemon at login and keeps it alive.
+
+  This is a TEMPLATE. The setup_librarian.sh script generates the final version
+  with your actual username substituted in automatically.
+
+  Manual installation (if needed):
+    1. Replace USERNAME with your macOS username (run: whoami)
+    2. Replace /Users/USERNAME with your home directory
+    3. Copy to ~/Library/LaunchAgents/com.USERNAME.librarian.plist
+    4. Run: launchctl load ~/Library/LaunchAgents/com.USERNAME.librarian.plist
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.USERNAME.librarian</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/USERNAME/librarian/.venv/bin/python</string>
+        <string>-u</string>
+        <string>/Users/USERNAME/librarian/main.py</string>
+    </array>
+
+    <!-- Start daemon automatically at login -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart automatically if the daemon crashes -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Redirect stdout and stderr to log file -->
+    <key>StandardOutPath</key>
+    <string>/Users/USERNAME/librarian/logs/system.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/USERNAME/librarian/logs/system.log</string>
+</dict>
+</plist>

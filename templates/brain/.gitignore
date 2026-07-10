@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V7
+.Trashes
+
+# Obsidian workspace state (personal view, not committed)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# Vim/editor swap files
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak

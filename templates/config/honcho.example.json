@@ -1,0 +1,15 @@
+{
+  "baseUrl": "http://localhost:8000",
+  "enabled": true,
+  "workspace": "hermes",
+  "recallMode": "hybrid",
+  "writeFrequency": "async",
+  "sessionStrategy": "per-directory",
+  "hosts": {
+    "hermes": {
+      "aiPeer": "YourAgentName",
+      "peerName": "your-username",
+      "pinPeerName": true
+    }
+  }
+}
