@@ -218,8 +218,10 @@ hermes-setup/
 │   ├── setup_brain_skeleton.sh        ← Step 2
 │   ├── setup_librarian.sh             ← Step 3
 │   ├── setup_honcho.sh                ← Step 4
-│   ├── setup_obsidian.sh              ← Step 5
-│   └── bootstrap_profiles.py         ← Step 6 (optional)
+│   ├── setup_skills.sh                ← Step 5
+│   ├── setup_obsidian.sh              ← Step 6
+│   └── bootstrap_profiles.py          ← Step 7
+
 └── templates/
     ├── librarian/                     ← Librarian source code
     │   ├── *.py                       ← All Python modules
@@ -238,8 +240,13 @@ hermes-setup/
     │   ├── timeline.json
     │   ├── .gitignore
     │   └── .stignore
-    └── config/
-        └── honcho.example.json        ← Honcho config template
+    ├── config/
+    │   └── honcho.example.json        ← Honcho config template
+    └── skills/                        ← Custom Hermes skills templates
+        ├── brain/
+        ├── brain-search/
+        └── honcho-management/
+
 ```
 
 ---
