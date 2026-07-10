@@ -71,8 +71,15 @@ def generate_daily_report():
         os.makedirs(REPORTS_DIR, exist_ok=True)
         report_path = os.path.join(REPORTS_DIR, f"{report_date_str}.md")
         
-        with open(report_path, "w", encoding="utf-8") as f:
-            f.write(final_report)
+        # If a report already exists for that day (e.g. manual trigger), append instead of overwriting
+        if os.path.exists(report_path):
+            logging.info(f"Report for {report_date_str} already exists. Appending as supplementary section.")
+            with open(report_path, "a", encoding="utf-8") as f:
+                f.write(f"\n\n---\n\n## Ek Rapor (Supplementary)\n\n")
+                f.write(final_report)
+        else:
+            with open(report_path, "w", encoding="utf-8") as f:
+                f.write(final_report)
             
         logging.info(f"Report generated successfully: {report_path}")
         
