@@ -184,10 +184,26 @@ This step adds the Session Initialization Protocol to existing Hermes agent prof
 ```bash
 python3 scripts/bootstrap_profiles.py
 ```
+---
+
+## Step 8: Initialize & Build Semantic Search Index
+
+To create the semantic search tables, btree indexes, and HNSW vector index, run the initial build using Honcho's Python environment:
+
+```bash
+~/honcho/.venv/bin/python ~/brain/scripts/index_brain.py --rebuild
+```
+
+**Verify success**:
+The command should complete without errors, scanning files and creating chunks. You can verify the tables:
+```bash
+/opt/homebrew/opt/postgresql@18/bin/psql -d honcho -c "SELECT count(*) FROM brain_documents;"
+```
 
 ---
 
-## Step 8: Final Verification
+## Step 9: Final Verification
+
 
 Run this checklist to confirm everything is working:
 
