@@ -61,6 +61,15 @@ ollama serve &
 Obsidian is a GUI app. Instruct the user:
 > "Please download and install Obsidian from https://obsidian.md — it's the note-taking app for your Brain vault."
 
+### 1f. PostgreSQL & pgvector (for Brain Semantic Search)
+```bash
+brew install postgresql@14 pgvector
+brew services start postgresql@14
+createdb honcho
+psql honcho -c "CREATE EXTENSION IF NOT EXISTS vector;"
+```
+Verify PostgreSQL is running and database `honcho` exists.
+
 ---
 
 ## Step 2: Set Up the Brain Vault

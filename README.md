@@ -18,6 +18,23 @@ Before running any scripts, ensure the following are installed on the new machin
 | **Python 3.14+** | `brew install python@3.14` | Required by Librarian daemon |
 | **Ollama** | `brew install ollama` | Local LLM server |
 | **Obsidian** | [Download from obsidian.md](https://obsidian.md) | Brain vault viewer |
+| **PostgreSQL** | `brew install postgresql@14` | Relational database |
+| **pgvector** | `brew install pgvector` | Vector similarity search extension |
+
+### 2. Database Initialization (for Brain Semantic Search)
+
+The Brain semantic search script (`index_brain.py`) requires a PostgreSQL database named `honcho` with the `vector` extension enabled.
+
+```bash
+# Start PostgreSQL service
+brew services start postgresql@14
+
+# Create the honcho database
+createdb honcho
+
+# Enable the pgvector extension on the database
+psql honcho -c "CREATE EXTENSION IF NOT EXISTS vector;"
+```
 
 ### 2. Hermes
 
