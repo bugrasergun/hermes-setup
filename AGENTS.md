@@ -61,14 +61,10 @@ ollama serve &
 Obsidian is a GUI app. Instruct the user:
 > "Please download and install Obsidian from https://obsidian.md — it's the note-taking app for your Brain vault."
 
-### 1f. PostgreSQL & pgvector (for Brain Semantic Search)
-```bash
-brew install postgresql@14 pgvector
-brew services start postgresql@14
-createdb honcho
-psql honcho -c "CREATE EXTENSION IF NOT EXISTS vector;"
-```
-Verify PostgreSQL is running and database `honcho` exists.
+### 1f. Verify Honcho Backend (for Brain Semantic Search)
+The semantic search script (`index_brain.py`) shares the local PostgreSQL database (`honcho`) and the `pgvector` extension configured by the **Honcho backend**.
+Verify the Honcho server is installed and running at `http://localhost:8000` (or the configured base URL). You do not need to install or configure PostgreSQL manually if Honcho is already configured.
+
 
 ---
 
