@@ -25,7 +25,22 @@ DO NOT WRITE (skip) IF:
 - The same topic is being discussed repeatedly without new information.
 - It's casual/social conversation.
 
-Your output MUST be strictly in JSON format matching the required schema. If you decide to skip, provide a skip_reason."""
+Your output MUST be strictly in JSON format matching the EXACT schema below:
+
+{
+  "decision": "write or skip",
+  "skip_reason": "if skip, why",
+  "entry": {
+    "type": "decision|discovery|problem|pattern|next_step|milestone",
+    "summary": "Short summary",
+    "detail": "Detailed explanation",
+    "project": "Project name if applicable",
+    "tags": ["tag1", "tag2"],
+    "status": "open|resolved|pending"
+  }
+}
+
+Do NOT invent new keys like 'title' or 'details' or 'next_steps'. ONLY use the keys shown above."""
 
 def get_librarian_conn():
     conn = sqlite3.connect(LIBRARIAN_DB, timeout=30)
@@ -92,11 +107,10 @@ def process_queue():
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}
             ],
-            "format": get_timeline_entry_schema(),
+            "format": "json",
             "options": {
                 "temperature": 0.1
             },
-            "format": "json",
             "stream": False
         }
 
@@ -118,6 +132,7 @@ def process_queue():
         
         parsed = json.loads(content)
         decision = parsed.get("decision")
+        logging.info(f"Raw Ollama output for item {item_id}:\n{content}")
         logging.info(f"Ollama decision for item {item_id}: {decision}")
         
         if decision == "write" and parsed.get("entry"):

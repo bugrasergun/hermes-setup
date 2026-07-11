@@ -35,7 +35,9 @@ def generate_daily_report():
     entries = timeline.get("entries", [])
     
     if not entries:
-        logging.info("No entries to report.")
+        logging.info("No entries to report. Updating timeline date to today.")
+        timeline["date"] = datetime.date.today().isoformat()
+        tl.save_timeline(timeline)
         return
 
     # Rapor sabah 06:00'da çalıştığı için bir önceki günün faaliyetlerini kapsar.
