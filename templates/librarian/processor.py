@@ -142,6 +142,12 @@ def process_queue():
             entry["session_id"] = item['session_id']
             entry["source"] = item['source']
             tl.add_entry(entry)
+            tl.update_agent_snapshot(
+                agent_name=item['agent_name'],
+                entry=entry,
+                session_id=item['session_id'],
+                source=item['source']
+            )
             logging.info(f"Timeline entry written for item {item_id}")
             
         update_status(item_id, 'done')

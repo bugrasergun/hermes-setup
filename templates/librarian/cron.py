@@ -1,10 +1,12 @@
 import json
 import os
+import subprocess
+import sys
 import time
 import datetime
 import requests
 import timeline as tl
-from config import OLLAMA_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT, REPORTS_DIR
+from config import OLLAMA_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT, REPORTS_DIR, BRAIN_DIR, VALIDATE_SCRIPT
 
 CRON_SYSTEM_PROMPT = """You are an expert technical writer and analyst. Your task is to generate a comprehensive Daily Report based on the provided atomic timeline entries recorded over the past 24 hours.
 
@@ -28,6 +30,68 @@ The report body MUST include:
 4. Use clear, professional language (Output language must be Turkish, even though instructions are in English).
 
 Do not invent information. Rely strictly on the provided timeline entries. If there are no entries, state that the day was inactive."""
+
+def git_commit_and_push(report_date_str):
+    """Validate brain bundle, then commit and push to GitHub if no errors."""
+    import logging
+    logging.info("Running brain validator...")
+
+    # 1. Validate
+    result = subprocess.run(
+        [sys.executable, VALIDATE_SCRIPT],
+        capture_output=True, text=True, cwd=BRAIN_DIR
+    )
+    output = result.stdout + result.stderr
+
+    if "Errors found: 0" not in output:
+        logging.error(f"Brain validation FAILED. Aborting git push.\n{output}")
+        return
+
+    logging.info("Validation passed (0 errors). Proceeding with git commit & push.")
+
+    # 2. Git add — only the files cron touches
+    files_to_add = [
+        "reports/daily/",
+        "timeline.json",
+    ]
+    env = os.environ.copy()
+    env.pop("GITHUB_TOKEN", None)  # IDE injected dummy token — must remove
+
+    add_result = subprocess.run(
+        ["git", "add"] + files_to_add,
+        capture_output=True, text=True, cwd=BRAIN_DIR, env=env
+    )
+    if add_result.returncode != 0:
+        logging.error(f"git add failed:\n{add_result.stderr}")
+        return
+
+    # 3. Git commit
+    commit_msg = f"chore(daily): auto-report {report_date_str} [librarian]"
+    commit_result = subprocess.run(
+        ["git", "commit", "-m", commit_msg],
+        capture_output=True, text=True, cwd=BRAIN_DIR, env=env
+    )
+    if commit_result.returncode != 0:
+        # Nothing new to commit is not a failure
+        if "nothing to commit" in commit_result.stdout:
+            logging.info("Nothing to commit — already up to date.")
+            return
+        logging.error(f"git commit failed:\n{commit_result.stderr}")
+        return
+
+    logging.info(f"git commit OK: {commit_msg}")
+
+    # 4. Git push
+    push_result = subprocess.run(
+        ["git", "push"],
+        capture_output=True, text=True, cwd=BRAIN_DIR, env=env
+    )
+    if push_result.returncode != 0:
+        logging.error(f"git push failed:\n{push_result.stderr}")
+        return
+
+    logging.info(f"git push OK — brain/{report_date_str} report is live on GitHub.")
+
 
 def generate_daily_report():
     import logging
@@ -99,13 +163,15 @@ def generate_daily_report():
                 if agent not in snapshots:
                     snapshots[agent] = {}
                 snapshots[agent]["last_daily_report"] = f"brain/reports/daily/{report_date_str}.md"
-                snapshots[agent]["last_seen"] = entry.get("timestamp")
                 
         timeline["agent_snapshots"] = snapshots
         timeline["entries"] = []
         timeline["date"] = datetime.date.today().isoformat() # Bugünün tarihiyle yeni güne başlıyoruz
         
         tl.save_timeline(timeline)
+
+        # Validate brain bundle ve GitHub'a push
+        git_commit_and_push(report_date_str)
         
     except Exception as e:
         logging.error(f"Failed to generate daily report: {e}", exc_info=True)

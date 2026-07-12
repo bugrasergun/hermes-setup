@@ -43,6 +43,8 @@ PROFILES = {
 TIMELINE_PATH = f"{HOME}/brain/timeline.json"
 LIBRARIAN_DB  = f"{HOME}/librarian/librarian.db"
 REPORTS_DIR   = f"{HOME}/brain/reports/daily"
+BRAIN_DIR       = f"{HOME}/brain"
+VALIDATE_SCRIPT = f"{HOME}/brain/scripts/validate.py"
 
 # =============================================================================
 # LLM SETTINGS (Ollama or OpenAI-compatible API)
