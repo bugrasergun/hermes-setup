@@ -95,6 +95,11 @@ def git_commit_and_push(report_date_str):
 
 def generate_daily_report():
     import logging
+    
+    # Rapor sabah 06:00'da çalıştığı için bir önceki günün faaliyetlerini kapsar.
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    report_date_str = yesterday.isoformat()
+    
     timeline = tl.get_timeline()
     entries = timeline.get("entries", [])
     
@@ -102,11 +107,9 @@ def generate_daily_report():
         logging.info("No entries to report. Updating timeline date to today.")
         timeline["date"] = datetime.date.today().isoformat()
         tl.save_timeline(timeline)
+        git_commit_and_push(report_date_str)
         return
 
-    # Rapor sabah 06:00'da çalıştığı için bir önceki günün faaliyetlerini kapsar.
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    report_date_str = yesterday.isoformat()
     
     prompt = f"TIMELINE ENTRIES FOR {report_date_str}:\n{json.dumps(entries, indent=2)}\n\nPlease generate the Daily Report in Turkish."
 
