@@ -13,3 +13,9 @@
 // Syncthing geçici dosyaları
 .stfolder
 ~syncthing~*
+
+# Ajan veri dosyaları (Syncthing ile mobil cihazlara senkronize edilmemeli)
+# timeline.json makine başına özeldir — AI agent sürekliliği için kritik.
+# Syncthing senkronizasyonu bu dosyayı uzak cihazda silebilir!
+timeline.json
+
