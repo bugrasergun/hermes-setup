@@ -36,17 +36,43 @@ curl -fsSL https://hermes.ai/install | bash
 
 After Hermes is installed and you've logged in, come back to this repo.
 
-### 3. Ollama Models
+### 3. LLM Mode \u2014 Choose Before Installing
 
-The Librarian daemon requires an LLM to analyze conversations. Install at least one:
+**Before installing Ollama, decide which inference mode fits your machine:**
+
+| | 🖥️ Local Mode (Ollama) | ☁️ Cloud Mode (NVIDIA NIM) |
+|---|---|---|
+| **Best for** | Apple Silicon (M1–M4), ≥16 GB RAM | Low-power laptops, no GPU, <16 GB RAM |
+| **Cost** | Free (runs locally) | Pay-per-token (very cheap, free tier available) |
+| **Privacy** | Full — data stays on device | Requests sent to NVIDIA servers |
+| **Internet** | Not required for inference | Required |
+| **Setup** | Install Ollama + pull model | Get NVIDIA API key (see Section 4 below) |
+
+#### 🖥️ Local Mode: Install Ollama
 
 ```bash
-# Recommended default (fast, low RAM, good quality)
+brew install ollama
+
+# Recommended model (fast, low RAM)
 ollama pull qwen2.5:4b
 
-# Or for Apple Silicon Mac (MLX-optimized, even faster)
-ollama pull qwen2.5:4b-mlx
+# For Apple Silicon MLX-optimized speed:
+# ollama pull qwen2.5:4b-mlx
+
+ollama serve &
 ```
+
+#### ☁️ Cloud Mode: Skip full LLM, only install embedding model
+
+Even in Cloud Mode, Ollama is required for the **Honcho memory system** (embedding generation with `nomic-embed-text`). Install Ollama but **only pull the embedding model** — skip the large LLM:
+
+```bash
+brew install ollama
+ollama pull nomic-embed-text
+ollama serve &
+```
+
+Then configure NVIDIA NIM as your inference provider (see Section 4 below).
 
 ### 4. LLM Provider — NVIDIA NIM (Recommended)
 

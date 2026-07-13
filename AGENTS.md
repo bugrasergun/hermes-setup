@@ -44,18 +44,65 @@ Verify: `python3 --version` should show 3.14+.
 brew install git
 ```
 
-### 1d. Ollama (Local LLM Server)
+### 1d. LLM Mode Decision — Ask First!
+
+> **STOP — Ask the user before installing anything.**
+
+Ask the user:
+> "Bu kurulumu yapacağınız bilgisayar yerel AI modeli çalıştıracak güçte mi? (Apple Silicon M3/M4 veya ≥16 GB RAM ile NVIDIA GPU önerilir). Yoksa NVIDIA NIM veya OpenRouter gibi bir bulut servis mi kullanmak istiyorsunuz?"
+
+**Wait for the answer and branch:**
+
+---
+
+#### 🖥️ Option A: Local Mode (Ollama)
+
+*Use this when: Apple Silicon Mac (M1/M2/M3/M4) or machine with ≥16 GB RAM. Models run locally, no API cost, no internet dependency.*
+
 ```bash
 brew install ollama
 ```
-After install, pull the required model:
+
+Pull the recommended model:
 ```bash
+# Best default for Apple Silicon (fast, low RAM, good quality)
 ollama pull qwen2.5:4b
+
+# Alternatively, for MLX-optimized speed on Apple Silicon:
+ollama pull qwen2.5:4b-mlx
 ```
+
 Start Ollama in background:
 ```bash
 ollama serve &
 ```
+
+Verify:
+```bash
+curl -s http://localhost:11434/api/tags | python3 -c "import sys,json; d=json.load(sys.stdin); print('Ollama OK, models:', [m['name'] for m in d.get('models',[])])"
+```
+
+> **Note for Librarian (Step 3):** Set `PROVIDER=ollama` and `MODEL=qwen2.5:4b` when the setup script asks.
+
+---
+
+#### ☁️ Option B: Cloud Mode (NVIDIA NIM — Recommended for low-power machines)
+
+*Use this when: Machine has less than 16 GB RAM, no GPU, or you prefer cloud inference. No local GPU required.*
+
+**Skip the Ollama installation entirely.** Instead, proceed directly to Step 1g (NVIDIA NIM setup) to configure the cloud provider.
+
+> **Note for Librarian (Step 3):** Set `PROVIDER=openrouter` (or `nvidia`) and provide the model name (e.g., `deepseek/deepseek-v4-flash`) when the setup script asks.
+
+> **⚠️ Important:** Ollama is still used by the Honcho memory system for embedding generation (`nomic-embed-text`). Even in Cloud Mode, you must install Ollama and pull the embedding model:
+> ```bash
+> brew install ollama
+> ollama pull nomic-embed-text
+> ollama serve &
+> ```
+> (You do NOT need to pull a full LLM like `qwen2.5:4b` in Cloud Mode — just the embedding model.)
+
+---
 
 ### 1e. Obsidian
 Obsidian is a GUI app. Instruct the user:
@@ -161,8 +208,10 @@ ls ~/brain/  # Should show: agents/ finance/ growth/ health/ learning/ network/ 
 **Script location**: `scripts/setup_librarian.sh`
 
 The script will ask you for configuration. Collect this information from the user BEFORE running:
-1. **LLM Provider**: Ask: "Which LLM will Librarian use? (a) Ollama/local model [default], (b) OpenRouter, (c) Other"
-2. **Model name**: If Ollama → `qwen2.5:4b`. If OpenRouter → ask for the model name.
+1. **LLM Provider**: Use the decision made in **Step 1d** above.
+   - **Local Mode (Ollama)**: Select option (a) — `Provider=ollama`, `Model=qwen2.5:4b`
+   - **Cloud Mode (NVIDIA NIM)**: Select option (b) OpenRouter or (c) Other — provide model name (e.g. `deepseek/deepseek-v4-flash`). Ensure the API key env var (`OPENROUTER_API_KEY` or `NVIDIA_API_KEY`) is set in the shell before running the script.
+2. **Model name**: Pre-filled from Step 1d decision.
 3. **Agent profiles**: Ask the user to list their Hermes agent profiles (name + profile directory). Default is `Ayda` (the main agent, using `~/.hermes/state.db`).
 
 ```bash
