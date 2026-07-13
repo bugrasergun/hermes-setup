@@ -90,17 +90,28 @@ curl -s http://localhost:11434/api/tags | python3 -c "import sys,json; d=json.lo
 
 *Use this when: Machine has less than 16 GB RAM, no GPU, or you prefer cloud inference. No local GPU required.*
 
-**Skip the Ollama installation entirely.** Instead, proceed directly to Step 1g (NVIDIA NIM setup) to configure the cloud provider.
+**Components affected — all three must be configured for cloud:**
+
+| Component | Local Mode | Cloud Mode |
+|-----------|-----------|------------|
+| **Hermes** (main agent) | Ollama local LLM | NVIDIA NIM / OpenRouter |
+| **Librarian** (session analyzer) | Ollama local LLM | OpenRouter / NVIDIA NIM |
+| **Honcho** (memory system — `.env`) | Ollama local LLM + embeddings | OpenRouter for LLM + Ollama *only* for embeddings |
+
+> **Embedding exception:** Honcho's embedding model (`nomic-embed-text`) must still run locally via Ollama — there is no supported cloud embedding fallback in the current Honcho setup. Only the reasoning models (Deriver, Summary, Dialectic, Dream) can be replaced with cloud providers.
+
+**Step 1 — Install Ollama for embeddings only (mandatory even in Cloud Mode):**
+```bash
+brew install ollama
+ollama pull nomic-embed-text
+ollama serve &
+```
+
+**Step 2 — Proceed to Step 1g** to configure NVIDIA NIM as the Hermes provider.
+
+**Step 3 — After NVIDIA is configured, set Honcho's reasoning models to cloud in `~/honcho/.env`** (see Step 4 Cloud Config below).
 
 > **Note for Librarian (Step 3):** Set `PROVIDER=openrouter` (or `nvidia`) and provide the model name (e.g., `deepseek/deepseek-v4-flash`) when the setup script asks.
-
-> **⚠️ Important:** Ollama is still used by the Honcho memory system for embedding generation (`nomic-embed-text`). Even in Cloud Mode, you must install Ollama and pull the embedding model:
-> ```bash
-> brew install ollama
-> ollama pull nomic-embed-text
-> ollama serve &
-> ```
-> (You do NOT need to pull a full LLM like `qwen2.5:4b` in Cloud Mode — just the embedding model.)
 
 ---
 
@@ -250,6 +261,55 @@ chmod +x scripts/setup_honcho.sh
 **Verify success**:
 ```bash
 cat ~/.hermes/honcho.json  # Should show a valid JSON config
+```
+
+### Step 4 Cloud Config (Cloud Mode only — skip if Local Mode)
+
+If the user chose **Option B: Cloud Mode** in Step 1d, the Honcho server's reasoning models must also be pointed at a cloud provider. Honcho uses OpenAI-compatible API format, so OpenRouter or NVIDIA NIM both work.
+
+**Open `~/honcho/.env`** and replace the Ollama model sections with the cloud provider. The `EMBEDDING` section must remain on Ollama — only replace the reasoning models.
+
+Example for **OpenRouter** (replace `qwen3.5:4b-mlx` with `deepseek/deepseek-v4-flash` and point BASE_URL to OpenRouter):
+
+```bash
+# Replace these in ~/honcho/.env (ALL reasoning model sections):
+# DERIVER, SUMMARY, DIALECTIC (all levels), DREAM_DEDUCTION, DREAM_INDUCTION
+
+# Cloud config template (using OpenRouter):
+export BASE_URL="https://openrouter.ai/api/v1"
+export MODEL="deepseek/deepseek-v4-flash"
+
+# Quick sed replacement to switch all reasoning models from Ollama to OpenRouter:
+sed -i '' \
+  -e 's|OVERRIDES__BASE_URL=http://localhost:11434/v1|OVERRIDES__BASE_URL=https://openrouter.ai/api/v1|g' \
+  -e 's|MODEL=qwen3.5:4b-mlx|MODEL=deepseek/deepseek-v4-flash|g' \
+  ~/honcho/.env
+
+# Add the API key (if not already set):
+echo "OPENROUTER_API_KEY=$OPENROUTER_API_KEY" >> ~/honcho/.env
+```
+
+> **Important:** Do NOT replace the `EMBEDDING_MODEL_CONFIG` section. Keep it pointing at Ollama:
+> ```
+> EMBEDDING_MODEL_CONFIG__TRANSPORT=openai
+> EMBEDDING_MODEL_CONFIG__MODEL=nomic-embed-text
+> EMBEDDING_MODEL_CONFIG__OVERRIDES__BASE_URL=http://localhost:11434/v1
+> EMBEDDING_VECTOR_DIMENSIONS=768
+> ```
+
+After editing `~/honcho/.env`, restart the Honcho server:
+```bash
+# If using the Honcho launchd service:
+launchctl kickstart -k gui/$(id -u)/com.$(whoami).honcho
+# Or manually:
+cd ~/honcho && .venv/bin/python -m honcho.main
+```
+
+**Verify Honcho is using cloud models:**
+```bash
+grep "BASE_URL" ~/honcho/.env
+# EMBEDDING line should show localhost:11434
+# ALL other lines should show openrouter.ai (or your cloud provider)
 ```
 
 Restart Hermes after this step.
