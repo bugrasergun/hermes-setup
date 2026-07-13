@@ -86,7 +86,7 @@ curl -s http://localhost:11434/api/tags | python3 -c "import sys,json; d=json.lo
 
 ---
 
-#### ☁️ Option B: Cloud Mode (NVIDIA NIM — Recommended for low-power machines)
+#### ☁️ Option B: Cloud Mode (NVIDIA NIM / OpenRouter — For low-power machines)
 
 *Use this when: Machine has less than 16 GB RAM, no GPU, or you prefer cloud inference. No local GPU required.*
 
@@ -96,20 +96,15 @@ curl -s http://localhost:11434/api/tags | python3 -c "import sys,json; d=json.lo
 |-----------|-----------|------------|
 | **Hermes** (main agent) | Ollama local LLM | NVIDIA NIM / OpenRouter |
 | **Librarian** (session analyzer) | Ollama local LLM | OpenRouter / NVIDIA NIM |
-| **Honcho** (memory system — `.env`) | Ollama local LLM + embeddings | OpenRouter for LLM + Ollama *only* for embeddings |
+| **Honcho** (memory system — `.env`) | Ollama local LLM + embeddings | OpenRouter/NVIDIA for LLM **AND** embeddings |
 
-> **Embedding exception:** Honcho's embedding model (`nomic-embed-text`) must still run locally via Ollama — there is no supported cloud embedding fallback in the current Honcho setup. Only the reasoning models (Deriver, Summary, Dialectic, Dream) can be replaced with cloud providers.
+> **No Ollama Required:** In full Cloud Mode, you do **not** need to install Ollama at all. Honcho supports cloud embeddings via OpenAI-compatible endpoints.
 
-**Step 1 — Install Ollama for embeddings only (mandatory even in Cloud Mode):**
-```bash
-brew install ollama
-ollama pull nomic-embed-text
-ollama serve &
-```
+**Step 1 — Skip Ollama installation entirely.**
 
 **Step 2 — Proceed to Step 1g** to configure NVIDIA NIM as the Hermes provider.
 
-**Step 3 — After NVIDIA is configured, set Honcho's reasoning models to cloud in `~/honcho/.env`** (see Step 4 Cloud Config below).
+**Step 3 — After NVIDIA is configured, set Honcho's models AND embedding config to cloud in `~/honcho/.env`** (see Step 4 Cloud Config below). *Crucial: This must be done BEFORE initializing the Honcho database.*
 
 > **Note for Librarian (Step 3):** Set `PROVIDER=openrouter` (or `nvidia`) and provide the model name (e.g., `deepseek/deepseek-v4-flash`) when the setup script asks.
 
@@ -265,37 +260,35 @@ cat ~/.hermes/honcho.json  # Should show a valid JSON config
 
 ### Step 4 Cloud Config (Cloud Mode only — skip if Local Mode)
 
-If the user chose **Option B: Cloud Mode** in Step 1d, the Honcho server's reasoning models must also be pointed at a cloud provider. Honcho uses OpenAI-compatible API format, so OpenRouter or NVIDIA NIM both work.
+If the user chose **Option B: Cloud Mode** in Step 1d, the Honcho server's models (both reasoning and embeddings) must be pointed at a cloud provider.
 
-**Open `~/honcho/.env`** and replace the Ollama model sections with the cloud provider. The `EMBEDDING` section must remain on Ollama — only replace the reasoning models.
+**CRITICAL: You MUST configure `EMBEDDING_VECTOR_DIMENSIONS` in `~/honcho/.env` to match your cloud embedding model *before* the database initializes.** Once pgvector tables are created, dimensions cannot be changed.
 
-Example for **OpenRouter** (replace `qwen3.5:4b-mlx` with `deepseek/deepseek-v4-flash` and point BASE_URL to OpenRouter):
+**Open `~/honcho/.env`** and replace the default Ollama configurations:
+
+Example for using **OpenRouter** (for reasoning) and **OpenAI** (for embeddings):
 
 ```bash
-# Replace these in ~/honcho/.env (ALL reasoning model sections):
-# DERIVER, SUMMARY, DIALECTIC (all levels), DREAM_DEDUCTION, DREAM_INDUCTION
-
-# Cloud config template (using OpenRouter):
-export BASE_URL="https://openrouter.ai/api/v1"
-export MODEL="deepseek/deepseek-v4-flash"
-
-# Quick sed replacement to switch all reasoning models from Ollama to OpenRouter:
+# 1. Update Reasoning Models (DERIVER, SUMMARY, DIALECTIC, DREAM):
 sed -i '' \
   -e 's|OVERRIDES__BASE_URL=http://localhost:11434/v1|OVERRIDES__BASE_URL=https://openrouter.ai/api/v1|g' \
   -e 's|MODEL=qwen3.5:4b-mlx|MODEL=deepseek/deepseek-v4-flash|g' \
   ~/honcho/.env
 
-# Add the API key (if not already set):
+# Add reasoning API key:
 echo "OPENROUTER_API_KEY=$OPENROUTER_API_KEY" >> ~/honcho/.env
-```
 
-> **Important:** Do NOT replace the `EMBEDDING_MODEL_CONFIG` section. Keep it pointing at Ollama:
-> ```
-> EMBEDDING_MODEL_CONFIG__TRANSPORT=openai
-> EMBEDDING_MODEL_CONFIG__MODEL=nomic-embed-text
-> EMBEDDING_MODEL_CONFIG__OVERRIDES__BASE_URL=http://localhost:11434/v1
-> EMBEDDING_VECTOR_DIMENSIONS=768
-> ```
+# 2. Update Embedding Model (EMBEDDING_MODEL_CONFIG):
+# Using OpenAI text-embedding-3-small as an example (dimension: 1536)
+sed -i '' \
+  -e 's|EMBEDDING_MODEL_CONFIG__MODEL=nomic-embed-text|EMBEDDING_MODEL_CONFIG__MODEL=text-embedding-3-small|g' \
+  -e 's|EMBEDDING_MODEL_CONFIG__OVERRIDES__BASE_URL=https://openrouter.ai/api/v1|EMBEDDING_MODEL_CONFIG__OVERRIDES__BASE_URL=https://api.openai.com/v1|g' \
+  -e 's|EMBEDDING_VECTOR_DIMENSIONS=768|EMBEDDING_VECTOR_DIMENSIONS=1536|g' \
+  ~/honcho/.env
+
+# Add embedding API key:
+echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> ~/honcho/.env
+```
 
 After editing `~/honcho/.env`, restart the Honcho server:
 ```bash
@@ -303,13 +296,6 @@ After editing `~/honcho/.env`, restart the Honcho server:
 launchctl kickstart -k gui/$(id -u)/com.$(whoami).honcho
 # Or manually:
 cd ~/honcho && .venv/bin/python -m honcho.main
-```
-
-**Verify Honcho is using cloud models:**
-```bash
-grep "BASE_URL" ~/honcho/.env
-# EMBEDDING line should show localhost:11434
-# ALL other lines should show openrouter.ai (or your cloud provider)
 ```
 
 Restart Hermes after this step.
