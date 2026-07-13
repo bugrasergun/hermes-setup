@@ -135,12 +135,16 @@ Copies the custom `brain`, `brain-search`, and `honcho-management` skills into y
 
 ### Step 7: Bootstrap Hermes Agent Profiles
 
-Add the Session Initialization Protocol to your Hermes agent profiles (so they auto-read the brain and timeline at session start):
+Add the Session Initialization Protocol to your Hermes agent profiles and patch the Vault Custodian Protocol into `config.yaml`:
 
 ```bash
 python3 scripts/bootstrap_profiles.py
 ```
 
+**What it does:**
+- Patches `~/.hermes/config.yaml` `environment_hint` with the Vault Custodian Protocol — instructs agents to read `timeline.json`, load the `brain` skill for vault operations, and load the `brain-search` skill for semantic discovery queries
+- Appends the Session Initialization Protocol to all `SOUL.md` files found in `~/.hermes/` and `~/.hermes/profiles/*/`
+- Safe to re-run: idempotent (uses markers to skip already-patched files)
 
 ### Step 8: Initialize & Build Semantic Search Index
 
