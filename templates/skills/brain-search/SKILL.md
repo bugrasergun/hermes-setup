@@ -1,6 +1,23 @@
 ---
 name: brain-search
-description: >\n  Semantic search across the ~/brain/ knowledge vault using vector embeddings.\n  Finds the most relevant brain documents (markdown, PDF, transcript) for a given\n  query by meaning, not just keywords. Supports per-agent profile filtering for\n  Layer 3 reference sources. Uses Ollama nomic-embed-text + PostgreSQL pgvector\n  (same infrastructure as Honcho). Complements the `brain` skill — load `brain`\n  for vault traversal, validation, and writing; load `brain-search` for semantic\n  discovery.\nplatforms: [linux, macos, windows]\ntriggers:\n  - brain'de ara\n  - beyinde ara\n  - brain search\n  - brain query\n  - brain'de var mı\n  - beyinde var mı\n  - semantic search brain\n  - brain'de ne var\n  - brain'de bul\n  - PDF ara\n  - transcript ara\n  - kaynak ara\n  - maya'nın kaynaklarında ara\n  - alex'in kaynaklarında ara
+description: > Semantic search across the ~/brain/ knowledge vault using vector embeddings. Finds the most relevant brain documents (markdown, PDF, transcript) for a given query by meaning, not just keywords. Supports per-agent profile filtering for Layer 3 reference sources. Uses Ollama nomic-embed-text + PostgreSQL pgvector  (same infrastructure as Honcho). Complements the `brain` skill — load `brain` for vault traversal, validation, and writing; load `brain-search` for semantic discovery. platforms: [linux, macos, windows]
+
+
+triggers:
+ - brain'de ara 
+ - beyinde ara
+ - brain search
+ - brain query
+ - brain'de var mı
+ - beyinde var mı
+ - semantic search brain
+ - brain'de ne var
+ - brain'de bul
+ - PDF ara
+ - transcript ara
+ - kaynak ara
+ - maya'nın kaynaklarında ara
+ - alex'in kaynaklarında ara
 
 trigger_keywords:
   - brain ara

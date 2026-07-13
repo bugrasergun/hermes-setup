@@ -3,8 +3,8 @@ name: brain
 description: >
   Complete operator for the ~/brain/ OKF knowledge vault. Handles reading, writing,
   migration, validation, git sync, and session reporting. This is the single source
-  of truth skill — obsidian skill covers read/write of individual files, brain-reader
-  covers migration protocol, but this skill governs ALL vault operations end-to-end.
+  of truth skill — obsidian skill covers read/write of individual files, brain-search
+  covers semantic discovery, but this skill governs ALL vault operations end-to-end.
 platforms: [linux, macos, windows]
 triggers:
   - /brain
@@ -45,7 +45,7 @@ Personal Growth Mentor). It is the single source of truth.
 
 **Related skills (do NOT modify):**
 - `obsidian` — detailed OKF format rules, wikilink conventions, report frontmatter templates
-- `brain-reader` — migration protocol, traversal protocol
+- `brain-search` — semantic vector search, Layer 3 source discovery
 
 This skill **complements** them with the complete picture: check-first patterns, git push,
 report index updates, and dangerous pitfalls.
@@ -104,6 +104,7 @@ Before processing any vault operation, always load:
 3. **Read existing concept files** — if writing something related, read what's already there
 4. **Never overwrite an existing concept** — use `patch` for edits, never `write_file`
 5. **Duplicate check** — verify no similar file exists (same topic, different name)
+6. **No Manual Traversal for Searching**: Do not manually search folders or read index files to find where information is located. You MUST use the `brain-search` skill to execute a semantic search first.
 
 > **Critical Pitfall:** `search_files(pattern="reports")` returns 0 for folders — it searches
 > **file names**, not directory names. Always traverse index structure to discover directories.
@@ -458,61 +459,22 @@ If you write through a symlink, the file ends up in the GLOBAL skills directory,
 - ❌ Write to the wrong subdirectory — `tech/` for tech, `learning/` for courses, etc.
 - ❌ **Create a subdirectory without an `index.md`** — OKF requires **every** subdirectory to have its own `index.md` (no frontmatter, plain markdown listing contents). When creating multi-level structures like `growth/diagnostics/`, `growth/habits/`, `growth/reviews/`, `growth/routine/`, intermediate-level directories need their own `index.md` too, not just the root and leaves. Missing index files break traversal — agents navigating from `growth/index.md` → `growth/diagnostics/index.md` hit a dead end. User explicitly corrected this.
 - ❌ **Use `playbooks/` for personal routines, habits, or tracking data** — `playbooks/` is **SOP-only** (agent reference procedures). Personal routine data belongs in `growth/routine/`, habit tracking in `growth/habits/`, accountability reviews in `growth/reviews/`. User explicitly corrected this.
-- ❌ **Write SKILL.md files in Turkish** — all SKILL.md files MUST be written in English. The agent's Turkish has spelling and grammar errors; English is the agent's stronger language. This applies to all `assistio-*` domain skills, new skills created, and skill updates/patches. User explicitly corrected this: \"Türkçe yazarken anlam ve imla hataları yapmışsın. Dosyaları yine teker teker değiştir.\" → all 4 Maya skills rewritten in English.
+- ❌ **Write SKILL.md files in Turkish** — all SKILL.md files MUST be written in English. The agent's Turkish has spelling and grammar errors; English is the agent's stronger language. This applies to all `assistio-*` domain skills, new skills created, and skill updates/patches. User explicitly corrected this: "Türkçe yazarken anlam ve imla hataları yapmışsın. Dosyaları yine teker teker değiştir." → all 4 Maya skills rewritten in English.
 - ❌ Mix "WHO someone is" (identity, profile, permanent context) with "WHAT they're working on now" (current plan, log, tracking) in the same directory — `self/` holds permanent profile/context (read by agents); `growth/` holds the agent's mutable working output (written by the agent)
 
 ---
 
-## Section 11 — Semantic Search (brain-search skill)
+## Section 11 — Integration with brain-search
 
-For **discovery queries** ("what does brain have about X?"), use the `brain-search` skill
-instead of manual traversal. It performs vector similarity search across all indexed brain
-documents using `nomic-embed-text` embeddings stored in Honcho's PostgreSQL.
+For **discovery queries** ("what does brain have about X?"), do not perform manual traversal. Pivot to the `brain-search` skill to run vector similarity searches.
 
-**Load `brain-search` skill when:**
-- User asks "brain'de X var mı?" / "brain'de X hakkında ne var?"
-- You need to find relevant files but don't know which directory to traverse
-- A query spans multiple domains (e.g., "Taco Bros + Maya's health program")
-
-**Do NOT use brain-search for:**
-- Reading a specific file you already know the path to → use `read_file` directly
-- Writing or updating files → use `brain` skill workflow (Section 3)
-- Conversation history → use `session_search`
-
-**Index maintenance:** A git `post-commit` hook automatically re-indexes changed `.md` files
-after each commit. If search results seem stale, run:
-```bash
-/Users/USERNAME/honcho/.venv/bin/python /Users/USERNAME/brain/scripts/index_brain.py --update
-```
-
-**Script:** `~/brain/scripts/index_brain.py` — CLI tool for indexing and search.
-**Table:** `brain_documents` in Honcho's PostgreSQL (768-dim pgvector, HNSW index).
-
-### Layer 3 — Reference Sources (PDF, Transcript, etc.)
-
-Place agent-specific reference materials in `references/sources/<agent>/`:
-
-```
-references/sources/
-  ├── index.md       ← master index
-  ├── shared/        ← all agents can access
-  ├── ayda/
-  ├── alex/
-  ├── sage/
-  └── maya/          ← e.g., pranayama-reference.pdf
-```
-
-**Supported file types:** `.md`, `.pdf` (PyMuPDF4LLM), `.txt`, `.srt`/`.vtt` (transcripts)
-
-**How it works:**
-1. Place a PDF in `references/sources/maya/breathing-guide.pdf`
-2. `git add` + `git commit` → post-commit hook auto re-indexes
-3. File is extracted (PDF→markdown via PyMuPDF4LLM), chunked, embedded, stored
-4. Agent searches with `--profile maya` → finds chunks from this PDF
-5. Citations include page numbers: "Breathing Guide, pg.47"
-
-**Search with profile:** `index_brain.py --search "query" --profile maya` (agent's own + shared)
-**Search all:** `index_brain.py --search "query" --profile all`
+### Synergy Protocol
+- **Discovery Mode**: When asked to find documents or check if information exists, use `brain-search`.
+- **Operation Mode**: Once `brain-search` identifies the file path, return to this `brain` skill to read, modify, validate, or commit the file.
+- **Index Sync**: A git `post-commit` hook in `~/brain/.git/hooks/` automatically runs `--update` when any supported file changes in a commit. No manual indexing is required under normal circumstances, but if search results are stale, run:
+  ```bash
+  /Users/USERNAME/honcho/.venv/bin/python /Users/USERNAME/brain/scripts/index_brain.py --update
+  ```
 
 ---
 

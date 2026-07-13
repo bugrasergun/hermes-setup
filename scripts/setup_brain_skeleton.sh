@@ -79,6 +79,23 @@ copy_if_missing "$REPO_ROOT/templates/brain/timeline.json"  "$BRAIN_ROOT/timelin
 copy_if_missing "$REPO_ROOT/templates/brain/.gitignore"     "$BRAIN_ROOT/.gitignore"
 copy_if_missing "$REPO_ROOT/templates/brain/.stignore"      "$BRAIN_ROOT/.stignore"
 
+# Subdirectory structure templates & rules
+copy_if_missing "$REPO_ROOT/templates/brain/agents/rules.md"             "$BRAIN_ROOT/agents/rules.md"
+copy_if_missing "$REPO_ROOT/templates/brain/agents/index.md"             "$BRAIN_ROOT/agents/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/finance/index.md"            "$BRAIN_ROOT/finance/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/growth/index.md"             "$BRAIN_ROOT/growth/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/health/index.md"             "$BRAIN_ROOT/health/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/learning/index.md"           "$BRAIN_ROOT/learning/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/network/index.md"            "$BRAIN_ROOT/network/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/playbooks/index.md"          "$BRAIN_ROOT/playbooks/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/projects/index.md"           "$BRAIN_ROOT/projects/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/references/index.md"         "$BRAIN_ROOT/references/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/references/sources/index.md" "$BRAIN_ROOT/references/sources/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/reports/index.md"            "$BRAIN_ROOT/reports/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/reports/daily/index.md"      "$BRAIN_ROOT/reports/daily/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/self/index.md"               "$BRAIN_ROOT/self/index.md"
+copy_if_missing "$REPO_ROOT/templates/brain/tech/index.md"               "$BRAIN_ROOT/tech/index.md"
+
 # Brain scripts
 copy_if_missing "$REPO_ROOT/templates/brain_scripts/validate.py"    "$BRAIN_ROOT/scripts/validate.py"
 copy_if_missing "$REPO_ROOT/templates/brain_scripts/validate.sh"    "$BRAIN_ROOT/scripts/validate.sh"
