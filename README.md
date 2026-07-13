@@ -48,6 +48,84 @@ ollama pull qwen2.5:4b
 ollama pull qwen2.5:4b-mlx
 ```
 
+### 4. LLM Provider — NVIDIA NIM (Recommended)
+
+The default configuration uses **NVIDIA NIM** as the primary inference provider. NVIDIA NIM gives access to high-quality models (GLM-5.2, DeepSeek V4) at low cost via a standard OpenAI-compatible API.
+
+#### Step A: Get an NVIDIA API Key
+
+1. Go to [https://build.nvidia.com](https://build.nvidia.com) and sign up / log in
+2. Navigate to **API Keys** in your account
+3. Create a new key — it will look like `nvapi-xxxxxxxxxxxxxxxxxxxx`
+
+#### Step B: Set the Environment Variable
+
+Add the key to your shell config so Hermes can read it:
+
+```bash
+# Add to ~/.zshrc (or ~/.bashrc)
+echo 'export NVIDIA_API_KEY="nvapi-xxxxxxxxxxxxxxxxxxxx"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Verify it's set:
+```bash
+echo $NVIDIA_API_KEY  # Should print your key
+```
+
+#### Step C: Register the Key with Hermes
+
+Hermes stores credentials in its auth pool, reading directly from the environment variable:
+
+```bash
+hermes auth add nvidia --type api-key --api-key "$NVIDIA_API_KEY"
+```
+
+Verify it's registered:
+```bash
+hermes auth status nvidia
+# Should print: nvidia: logged in
+```
+
+#### Step D: Set NVIDIA as the Default Provider
+
+Run the interactive model picker and select NVIDIA:
+
+```bash
+hermes model
+```
+
+This command opens an interactive selector. Choose:
+- **Provider**: NVIDIA
+- **Model**: `z-ai/glm-5.2` (recommended — large context, high quality) or `nvidia/llama-3.1-nemotron-ultra-253b-v1`
+
+Alternatively, edit `~/.hermes/config.yaml` directly:
+
+```yaml
+model:
+  default: z-ai/glm-5.2
+  provider: nvidia
+  base_url: https://integrate.api.nvidia.com/v1
+  context_length: 1048576
+```
+
+#### Step E: Configure Fallback Providers (Optional)
+
+Add fallback models that Hermes switches to if the primary model fails or rate-limits:
+
+```yaml
+fallback_providers:
+  - provider: nvidia
+    model: deepseek-ai/deepseek-v4-pro
+  - provider: nvidia
+    model: deepseek-ai/deepseek-v4-flash
+  - provider: openrouter
+    model: deepseek/deepseek-v4-flash
+```
+
+> [!NOTE]
+> If you also use **OpenRouter** as a fallback, set `OPENROUTER_API_KEY` the same way and register it with `hermes auth add openrouter --type api-key --api-key "$OPENROUTER_API_KEY"`.
+
 ---
 
 ## 🚀 Setup Order
@@ -318,3 +396,6 @@ tail -f ~/librarian/logs/system.log
 | Brain semantic search not working | Ensure PostgreSQL + pgvector is running. Run `index_brain.py --rebuild`. |
 | Obsidian not finding vault | Open Obsidian → "Open folder as vault" → select `~/brain/`. |
 | Honcho plugin errors | Check `~/.hermes/honcho.json` matches the template. Restart Hermes. |
+| `nvidia: logged out` | Run `hermes auth add nvidia --type api-key --api-key "$NVIDIA_API_KEY"`. Check `$NVIDIA_API_KEY` is exported in your shell. |
+| NVIDIA 401 Unauthorized | Your API key may be expired or invalid. Generate a new one at [build.nvidia.com](https://build.nvidia.com) and re-register. |
+| NVIDIA rate limit / 429 | You've hit the free tier limit. Wait or upgrade your NVIDIA NIM plan. Add an OpenRouter fallback in `config.yaml`. |

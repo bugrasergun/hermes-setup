@@ -65,6 +65,73 @@ Obsidian is a GUI app. Instruct the user:
 The semantic search script (`index_brain.py`) shares the local PostgreSQL database (`honcho`) and the `pgvector` extension configured by the **Honcho backend**.
 Verify the Honcho server is installed and running at `http://localhost:8000` (or the configured base URL). You do not need to install or configure PostgreSQL manually if Honcho is already configured.
 
+### 1g. Configure NVIDIA NIM as LLM Provider
+
+This setup uses **NVIDIA NIM** as the primary inference provider. You must collect the API key from the user, store it as an environment variable, and register it with Hermes.
+
+**Ask the user:**
+> "Do you have an NVIDIA NIM API key? If not, go to https://build.nvidia.com, sign up, and generate one. It looks like `nvapi-xxxxxxxxxxxxxxxxxxxx`."
+
+**Once the user provides the key:**
+
+**Step 1 — Add to shell environment:**
+```bash
+# Append to ~/.zshrc (run exactly as shown — replace the value with the real key)
+echo 'export NVIDIA_API_KEY="nvapi-xxxxxxxxxxxxxxxxxxxx"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Verify:
+```bash
+echo $NVIDIA_API_KEY
+# Must print the key, not an empty line. If empty, re-run the echo and source commands.
+```
+
+**Step 2 — Register with Hermes auth pool:**
+```bash
+hermes auth add nvidia --type api-key --api-key "$NVIDIA_API_KEY"
+```
+
+Verify:
+```bash
+hermes auth status nvidia
+# Expected output: nvidia: logged in
+```
+
+**Step 3 — Set NVIDIA as the default provider in `~/.hermes/config.yaml`:**
+
+Check if `~/.hermes/config.yaml` already has a `model:` block at the top. If yes, ensure it reads:
+```yaml
+model:
+  default: z-ai/glm-5.2
+  provider: nvidia
+  base_url: https://integrate.api.nvidia.com/v1
+  context_length: 1048576
+```
+If the block is missing or has a different provider, use `write_file` to replace it.
+
+**Step 4 — Add fallback providers (append under `fallback_providers:` in config.yaml):**
+```yaml
+fallback_providers:
+  - provider: nvidia
+    model: deepseek-ai/deepseek-v4-pro
+  - provider: nvidia
+    model: deepseek-ai/deepseek-v4-flash
+  - provider: openrouter
+    model: deepseek/deepseek-v4-flash
+```
+
+> If the user also has an OpenRouter API key, register it the same way:
+> ```bash
+> hermes auth add openrouter --type api-key --api-key "$OPENROUTER_API_KEY"
+> ```
+
+**Verify NVIDIA is working end-to-end:**
+```bash
+hermes auth status nvidia   # Must say "logged in"
+echo $NVIDIA_API_KEY        # Must not be empty
+```
+
 
 ---
 
@@ -226,6 +293,12 @@ test -f ~/.hermes/honcho.json && echo "✓ Honcho config OK"
 
 # 6. Brain scripts are executable
 test -x ~/brain/scripts/validate.sh && echo "✓ Brain scripts OK"
+
+# 7. NVIDIA provider is authenticated
+hermes auth status nvidia && echo "✓ NVIDIA auth OK"
+
+# 8. NVIDIA_API_KEY env var is set
+[ -n "$NVIDIA_API_KEY" ] && echo "✓ NVIDIA_API_KEY is set" || echo "✗ NVIDIA_API_KEY is EMPTY — add to ~/.zshrc and re-source"
 ```
 
 ---
@@ -240,6 +313,9 @@ test -x ~/brain/scripts/validate.sh && echo "✓ Brain scripts OK"
 | `launchctl: no such file` | Plist not created | Re-run `setup_librarian.sh` |
 | `ModuleNotFoundError: requests` | venv not set up | Re-run `setup_librarian.sh` from Step 4 |
 | `Permission denied` | Script not executable | `chmod +x scripts/*.sh` |
+| `nvidia: logged out` | API key not registered | Run `hermes auth add nvidia --type api-key --api-key "$NVIDIA_API_KEY"` |
+| `NVIDIA_API_KEY is EMPTY` | Env var not exported | Add `export NVIDIA_API_KEY="..."` to `~/.zshrc` and `source ~/.zshrc` |
+| NVIDIA 401 Unauthorized | Key expired or invalid | Generate new key at [build.nvidia.com](https://build.nvidia.com) and re-register |
 
 ---
 
