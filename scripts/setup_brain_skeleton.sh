@@ -184,28 +184,6 @@ EOF
     echo "  ✓ Created .obsidian/app.json"
 fi
 
-# -----------------------------------------------------------------------------
-# 7. Install post-update hook for Hermes
-# -----------------------------------------------------------------------------
-echo ""
-echo "► Setting up Hermes integration..."
-
-if [ -d "$HOME/.hermes" ]; then
-    HERMES_HOOKS="$HOME/.hermes/hooks"
-    mkdir -p "$HERMES_HOOKS"
-
-    cat > "$HERMES_HOOKS/post-update-brain.sh" <<'EOF'
-#!/bin/zsh
-# Post-update hook for Hermes
-# Agent identity comes from each profile's SOUL.md.
-# The main SOUL.md at ~/.hermes/SOUL.md is the canonical identity file.
-echo "✓ SOUL.md is the canonical identity source."
-EOF
-    chmod +x "$HERMES_HOOKS/post-update-brain.sh"
-    echo "  ✓ Installed post-update hook in $HERMES_HOOKS"
-else
-    echo "  ⚠ Hermes not found at ~/.hermes — skipping Hermes hooks"
-fi
 
 # -----------------------------------------------------------------------------
 # Done

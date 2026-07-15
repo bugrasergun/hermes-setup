@@ -17,23 +17,6 @@ else
   echo "✓ BRAIN_PATH is already configured in $ZSH_CONFIG"
 fi
 
-# 2. Add post-update hooks for Hermes if Hermes is installed
-HERMES_HOOKS="$HOME/.hermes/hooks"
-if [ -d "$HOME/.hermes" ]; then
-  mkdir -p "$HERMES_HOOKS"
-  cat > "$HERMES_HOOKS/post-update-brain.sh" << 'EOF'
-#!/bin/zsh
-# Post-update hook — agents/agents.md has been removed.
-# Agent identity comes from each profile's own SOUL.md.
-# The main SOUL.md at ~/.hermes/SOUL.md is the canonical identity file.
-# No sync needed — SOUL.md is already the source of truth.
-echo "✓ SOUL.md is the canonical identity source (agents/agents.md removed)."
-EOF
-  chmod +x "$HERMES_HOOKS/post-update-brain.sh"
-  echo "✓ Installed post-update hooks to Hermes at $HERMES_HOOKS"
-else
-  echo "⚠️ Hermes is not installed or config dir not at ~/.hermes. Skipping hooks."
-fi
 
 # 3. Create initial empty Obsidian configs so it is ready
 OBSIDIAN_DIR="$BRAIN_ROOT/.obsidian"
