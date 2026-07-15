@@ -247,6 +247,7 @@ python3 scripts/bootstrap_profiles.py
 
 **What it does:**
 - Patches `~/.hermes/config.yaml` `environment_hint` with the Vault Custodian Protocol — instructs agents to read `timeline.json`, load the `brain` skill for vault operations, and load the `brain-search` skill for semantic discovery queries
+- Patches `~/.hermes/config.yaml` `compression.hygiene_hard_message_limit` to `1500` to prevent premature context compaction on large-context models (e.g. DeepSeek with 1M context) when token limit is not yet reached, thereby preserving raw history (avoiding information loss/amnesia) for a longer duration
 - Appends the Session Initialization Protocol to all `SOUL.md` files found in `~/.hermes/` and `~/.hermes/profiles/*/`
 - Safe to re-run: idempotent (uses markers to skip already-patched files)
 

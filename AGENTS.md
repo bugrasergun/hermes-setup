@@ -341,7 +341,7 @@ Then instruct the user to:
 
 ## Step 7: Bootstrap Hermes Profiles
 
-This step adds the Session Initialization Protocol to existing Hermes agent profiles so they auto-read the Brain vault and timeline at session start.
+This step adds the Session Initialization Protocol to existing Hermes agent profiles so they auto-read the Brain vault and timeline at session start. It also patches `~/.hermes/config.yaml` to set `hygiene_hard_message_limit` to `1500` to prevent premature context compression on large-context models.
 
 ```bash
 python3 scripts/bootstrap_profiles.py

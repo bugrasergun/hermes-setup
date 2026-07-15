@@ -147,6 +147,47 @@ def patch_environment_hint(dry_run: bool = False) -> bool:
     return True
 
 
+def patch_hygiene_limit(dry_run: bool = False) -> bool:
+    """
+    Patch the hygiene_hard_message_limit to 1500 in ~/.hermes/config.yaml.
+    Safe to re-run: checks if already set before patching.
+    """
+    if not CONFIG_YAML.exists():
+        print(f"  ⚠  config.yaml not found at {CONFIG_YAML} — skipping hygiene_hard_message_limit patch")
+        return False
+
+    content = CONFIG_YAML.read_text(encoding="utf-8")
+
+    # Already set to 1500?
+    if "hygiene_hard_message_limit: 1500" in content:
+        print("  — hygiene_hard_message_limit is already set to 1500 (skipping)")
+        return True
+
+    # Try to replace existing hygiene_hard_message_limit key
+    existing_pattern = re.compile(r"^  hygiene_hard_message_limit:\s*\d+", re.MULTILINE)
+    if existing_pattern.search(content):
+        new_content = existing_pattern.sub("  hygiene_hard_message_limit: 1500", content)
+        action = "Updated hygiene_hard_message_limit to 1500"
+    else:
+        # If not present, try to insert it under the compression: block
+        compression_pattern = re.compile(r"^(compression:\s*\n)", re.MULTILINE)
+        if compression_pattern.search(content):
+            new_content = compression_pattern.sub(r"\1  hygiene_hard_message_limit: 1500\n", content)
+            action = "Inserted hygiene_hard_message_limit: 1500 under compression"
+        else:
+            print("  ⚠  Could not locate compression: block in config.yaml — manual edit required")
+            print("     Add '  hygiene_hard_message_limit: 1500' under 'compression:' block.")
+            return False
+
+    if dry_run:
+        print(f"  [DRY RUN] Would patch config.yaml: {action}")
+        return True
+
+    CONFIG_YAML.write_text(new_content, encoding="utf-8")
+    print(f"  ✓ config.yaml patched: {action}")
+    return True
+
+
 def main():
     print()
     print("╔══════════════════════════════════════════════════╗")
@@ -170,6 +211,13 @@ def main():
     # -------------------------------------------------------------------------
     print("► Patching Hermes config.yaml environment_hint...")
     patch_environment_hint(dry_run=dry_run)
+    print()
+
+    # -------------------------------------------------------------------------
+    # Part 1b: Patch hygiene_hard_message_limit in config.yaml
+    # -------------------------------------------------------------------------
+    print("► Patching Hermes config.yaml hygiene_hard_message_limit...")
+    patch_hygiene_limit(dry_run=dry_run)
     print()
 
     # -------------------------------------------------------------------------
